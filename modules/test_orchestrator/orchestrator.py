@@ -1,23 +1,24 @@
 import json
 import os
-import datetime
-from gevent import Greenlet
+import gevent
 from jsonschema.validators import validate
 from jsonschema.exceptions import ValidationError
 
+import logging
+LOGGER = logging.getLogger(__name__)
 
-class TestHandler:
+class TestHandler():
     def __init__(self, path='modules/test_orchestrator/test_cases'):
         self.tests = []
 
-        #TODO validaet if path exists
+        #TODO validate if path exists
         for file in os.listdir(path):
             testcase = TestCase(path=path + '/' + file)
             if testcase.valid:
-                print 'Testcase  '+ str(testcase) + ' valid, adding to list'
+                LOGGER.info('Testcase  '+ str(testcase) + ' valid, adding to list')
                 self.tests.append(testcase)
             else:
-                print 'Testcase is invalid'
+                LOGGER.error('Testcase is invalid')
 
     def getTests(self):
         return self.tests
@@ -41,7 +42,6 @@ class TestHandler:
                 test.startEvents()
                 return test.eventStack
         return None
-
 
 #TODO Move to config file
 SCHEMA_PATH = './modules/test_orchestrator/testcase.schema'
@@ -71,10 +71,10 @@ class TestCase:
             with open(SCHEMA_PATH) as s_content:
                 self.schema = json.loads(s_content.read())
         except IOError as e:
-            print str(e)
+            LOGGER.error(str(e))
             self.valid = False
-        except ValueError:
-            print ValueError
+        except ValueError as e:
+            LOGGER.error(str(e))
             self.valid = False
 
     def validate_data(self):
@@ -83,8 +83,8 @@ class TestCase:
 
         try:
             validate(self.data, self.schema)
-        except ValidationError:
-            print ValidationError.message
+        except ValidationError as e:
+            LOGGER.error(e)
             self.valid = False
             return
 
@@ -96,7 +96,7 @@ class TestCase:
         for action in self.actions:
             if len(filter(lambda e: e['name'] == action['on'], self.hosts)) == 0 or \
                      len(filter(lambda e: e['name'] == action['to'], self.bandwidths)) == 0:
-                print 'action ' + str(action) + ' invalid in file ' + self.name + ' ' + self.path
+                LOGGER.error('action ' + str(action) + ' invalid in file ' + self.name + ' ' + self.path)
                 self.valid = False
 
     def get_host_ip(self, host_name):
@@ -107,41 +107,36 @@ class TestCase:
         entries = filter(lambda e: e["name"] == bw_name, self.bandwidths)
         return entries[0]["bw"] / 1000
 
-    def executeEvent(self, action, idx="middle"):
-        print 'Event fired'
-        print datetime.now()
+    def executeEvent(self, action, idx):
 
         if 'for' in action:
-            print 'Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action[
-                'on'] + ' for ' + str(action['for']) + ' seconds'
+            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action[
+                'on'] + ' for ' + str(action['for']) + ' seconds')
         else:
-            print 'Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action['on']
+            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action['on'])
 
         if idx == "last":
-            print 'Test case ' + self.name + ' Finished'
+            LOGGER.debug('Test case ' + self.name + ' Finished')
             self.state = 'FINISHED'
 
     def __str__(self):
         return self.name + " from " + self.path + ' state ' + self.state
 
     def startEvents(self):
+        LOGGER.info('Starting test case {}'.format(self.name))
         timer = 0
         self.state = 'RUNNING'
 
         for idx, action in enumerate(self.actions):
-
-            print timer
-
             if idx == 0:
-                g = Greenlet.spawn_later(timer, self.executeEvent, action, "first")
+                g = gevent.spawn_later(timer, self.executeEvent, action, "first")
             elif idx == len(self.actions) - 1:
-                g = Greenlet.spawn_later(timer, self.executeEvent, action, "last")
+                g = gevent.spawn_later(timer, self.executeEvent, action, "last")
             else:
-                g = Greenlet.spawn_later(timer, self.executeEvent, action, "middle")
+                g = gevent.spawn_later(timer, self.executeEvent, action, "middle")
 
             self.eventStack.append(g)
 
             if 'for' in action:
                 timer += action['for']
 
-            print 'events scheduled'

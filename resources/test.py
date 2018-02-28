@@ -1,5 +1,8 @@
 from flask_restful import fields, marshal_with, Resource, abort
-from modules.test_orchestrator.orchestrator import TestHandler, TestCase
+from modules.test_orchestrator.orchestrator import TestHandler
+
+import logging
+LOGGER = logging.getLogger(__name__)
 
 test_resource_host_fields = {
     'name': fields.String,
@@ -30,18 +33,21 @@ test_resource_fields = {
 
 TESTS = TestHandler()
 
+
 class Test(Resource):
     @marshal_with(test_resource_fields)
     def get(self, test_name):
         test = TESTS.getTest(name=test_name)
-        return TESTS.getTest(name=test_name) if test is not None else abort(404, message="Test case {} doesn't exist".format(test_name))
+        return test if test is not None else abort(404, message="Test case {} doesn't exist".format(test_name))
 
     def post(self, test_name):
-        print 'post requestsed'
         events = TESTS.orchestrateTest(name=test_name)
-        print events
-        return {test_name: 'Test case started'}
-
+        if events:
+            LOGGER.info('Test case started')
+            return {test_name: 'Test case started'}
+        else:
+            LOGGER.info('Test case not found')
+            abort(404, message="Test case {} doesn't exist".format(test_name))
 
 
 class TestList(Resource):
