@@ -1,0 +1,48 @@
+{
+  "name": "test1",
+  "hosts": [
+    {
+      "name": "dane_server",
+      "ip": "192.168.124.2"
+    }
+  ],
+  "bandwidths": [
+    {
+      "name": "initial_bw",
+      "bw": 1000000000
+    },
+    {
+      "name": "100mbit",
+      "bw": 100000000
+    },
+    {
+      "name": "30mbit",
+      "bw": 30000000
+    }
+  ],
+  "actions": [
+    {
+      "set": "bw",
+      "on": "dane_server",
+      "to": "initial_bw",
+      "for": 5
+    },
+    {
+      "set": "bw",
+      "on": "dane_server",
+      "to": "100mbit",
+      "for": 15
+    },
+    {
+      "set": "bw",
+      "on": "dane_server",
+      "to": "30mbit",
+      "for": 5
+    },
+    {
+      "set": "bw",
+      "on": "dane_server",
+      "to": "initial_bw"
+    }
+  ]
+}

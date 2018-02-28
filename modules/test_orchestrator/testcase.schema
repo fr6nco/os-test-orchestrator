@@ -1,0 +1,69 @@
+{
+	"definitions": {
+		"host": {
+			"type": "object",
+			"properties": {
+				"name": {"type": "string"},
+				"ip": {
+					"type": "string",
+					"anyOf": [
+						{ "format": "ipv4" },
+						{ "format": "ipv6" }
+					]
+				}
+			},
+			"required": ["name", "ip"],
+			"additionalProperties": false
+		},
+		"bandwidth": {
+			"type": "object",
+			"properties": {
+				"name": { "type": "string" },
+				"bw": { "type": "number" }
+			},
+			"required": ["name", "bw"],
+			"additionalProperties": false
+		},
+		"action": {
+			"type": "object",
+			"properties": {
+				"set": {
+					"type": "string",
+					"enum": [ "bw" ]
+				},
+				"on": { "type": "string" },
+				"to": { "type": "string" },
+				"for": { "type": "number" }
+			},
+			"required": ["set", "on", "to"],
+			"additionalProperties": false
+		}
+	},
+	"type": "object",
+    "properties": {
+    	"name": {"type": "string" },
+    	"hosts": {
+    		"type": "array",
+    		"items": {
+    			"$ref": "#/definitions/host"
+    		},
+    		"minItems": 1
+    	},
+    	"bandwidths": {
+    		"type": "array",
+    		"items": {
+    			"$ref": "#/definitions/bandwidth"
+    		},
+    		"minItems": 1
+    	},
+    	"actions": {
+    		"type": "array",
+    		"items": {
+    			"$ref": "#/definitions/action"
+    		},
+    		"minItems": 1
+    	}
+    },
+    "required": [ "name", "hosts", "bandwidths", "actions" ],
+    "additionalProperties": false
+}
