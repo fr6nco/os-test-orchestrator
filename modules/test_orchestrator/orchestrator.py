@@ -1,5 +1,7 @@
 import json
 import os
+import datetime
+from gevent import Greenlet
 from jsonschema.validators import validate
 from jsonschema.exceptions import ValidationError
 
@@ -38,6 +40,7 @@ class TestHandler:
             if test.name == name:
                 test.startEvents()
                 return test.eventStack
+        return None
 
 
 #TODO Move to config file
@@ -95,3 +98,50 @@ class TestCase:
                      len(filter(lambda e: e['name'] == action['to'], self.bandwidths)) == 0:
                 print 'action ' + str(action) + ' invalid in file ' + self.name + ' ' + self.path
                 self.valid = False
+
+    def get_host_ip(self, host_name):
+        entries = filter(lambda e: e["name"] == host_name, self.hosts)
+        return entries[0]["ip"]
+
+    def get_bw_in_kbps(self, bw_name):
+        entries = filter(lambda e: e["name"] == bw_name, self.bandwidths)
+        return entries[0]["bw"] / 1000
+
+    def executeEvent(self, action, idx="middle"):
+        print 'Event fired'
+        print datetime.now()
+
+        if 'for' in action:
+            print 'Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action[
+                'on'] + ' for ' + str(action['for']) + ' seconds'
+        else:
+            print 'Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action['on']
+
+        if idx == "last":
+            print 'Test case ' + self.name + ' Finished'
+            self.state = 'FINISHED'
+
+    def __str__(self):
+        return self.name + " from " + self.path + ' state ' + self.state
+
+    def startEvents(self):
+        timer = 0
+        self.state = 'RUNNING'
+
+        for idx, action in enumerate(self.actions):
+
+            print timer
+
+            if idx == 0:
+                g = Greenlet.spawn_later(timer, self.executeEvent, action, "first")
+            elif idx == len(self.actions) - 1:
+                g = Greenlet.spawn_later(timer, self.executeEvent, action, "last")
+            else:
+                g = Greenlet.spawn_later(timer, self.executeEvent, action, "middle")
+
+            self.eventStack.append(g)
+
+            if 'for' in action:
+                timer += action['for']
+
+            print 'events scheduled'

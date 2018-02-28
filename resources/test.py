@@ -36,6 +36,12 @@ class Test(Resource):
         test = TESTS.getTest(name=test_name)
         return TESTS.getTest(name=test_name) if test is not None else abort(404, message="Test case {} doesn't exist".format(test_name))
 
+    def post(self, test_name):
+        print 'post requestsed'
+        events = TESTS.orchestrateTest(name=test_name)
+        print events
+        return {test_name: 'Test case started'}
+
 
 
 class TestList(Resource):
