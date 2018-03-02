@@ -1,6 +1,7 @@
 import json
 import os
 import gevent
+import requests
 from jsonschema.validators import validate
 from jsonschema.exceptions import ValidationError
 
@@ -45,6 +46,7 @@ class TestHandler():
 
 #TODO Move to config file
 SCHEMA_PATH = './modules/test_orchestrator/testcase.schema'
+OS_PROXY_ENDPOINT = 'http://localhost:5001/api/qos'
 
 
 class TestCase:
@@ -59,7 +61,6 @@ class TestCase:
         self.name = ""
         self.eventStack = []
         self.state = 'INIT'
-        self.curr_bw_rule_id ="" # TODO this is a bit hacky, assumes only one rule is present and modifiedd
 
         self.loaddata()
         self.validate_data()
@@ -95,35 +96,79 @@ class TestCase:
 
         for action in self.actions:
             if len(filter(lambda e: e['name'] == action['on'], self.hosts)) == 0 or \
-                     len(filter(lambda e: e['name'] == action['to'], self.bandwidths)) == 0:
+                     len(filter(lambda e: e['name'] == action['to'] or action['to'] is None, self.bandwidths)) == 0:
                 LOGGER.error('action ' + str(action) + ' invalid in file ' + self.name + ' ' + self.path)
                 self.valid = False
 
-    def get_host_ip(self, host_name):
-        entries = filter(lambda e: e["name"] == host_name, self.hosts)
-        return entries[0]["ip"]
+    def assignPolicy(self, ip, policy):
 
-    def get_bw_in_kbps(self, bw_name):
-        entries = filter(lambda e: e["name"] == bw_name, self.bandwidths)
-        return entries[0]["bw"] / 1000
+        data = {'policy': policy}
+
+        r = requests.post(OS_PROXY_ENDPOINT + '/' + ip, data=data)
+
+        if r.status_code == 200:
+            LOGGER.debug('Policy set successfully')
+            LOGGER.debug(str(r.json()))
+        else:
+            LOGGER.error('Failed to set policy' + r.text)
+
+    def unassignPolicy(self, ip):
+        r = requests.delete(OS_PROXY_ENDPOINT + '/' + ip)
+
+        if r.status_code == 200:
+            LOGGER.debug('Policy unset successfully')
+        else:
+            LOGGER.error('Failed to unset policy' + r.text)
 
     def executeEvent(self, action, idx):
 
         if 'for' in action:
-            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action[
+            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + str(action['to']) + ' on ' + action[
                 'on'] + ' for ' + str(action['for']) + ' seconds')
         else:
-            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + action['to'] + ' on ' + action['on'])
+            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + str(action['to']) + ' on ' + action['on'])
+
+        for host in self.hosts:
+            if host['name'] == action['on']:
+                if action['to'] is None:
+                    self.unassignPolicy(host['ip'])
+                else:
+                    self.assignPolicy(host['ip'], action['to'])
+                break
 
         if idx == "last":
             LOGGER.debug('Test case ' + self.name + ' Finished')
             self.state = 'FINISHED'
+            self.deletePolicies()
 
     def __str__(self):
         return self.name + " from " + self.path + ' state ' + self.state
 
+    def loadPolicies(self):
+        for bw in self.bandwidths:
+            r = requests.post(OS_PROXY_ENDPOINT + '/policy', data=bw)
+
+            if r.status_code == 200:
+                LOGGER.debug(str(r.json()))
+            else:
+                LOGGER.error("Failed to load policy to openstack " + r.text)
+
+    def deletePolicies(self):
+        for bw in self.bandwidths:
+
+            r = requests.delete(OS_PROXY_ENDPOINT + '/policy/' + bw['name'])
+
+            if r.status_code == 200:
+                LOGGER.debug('Policy deleted')
+            else:
+                LOGGER.error('Failed to delete policy' + r.text)
+
+
     def startEvents(self):
         LOGGER.info('Starting test case {}'.format(self.name))
+
+        self.loadPolicies()
+
         timer = 0
         self.state = 'RUNNING'
 

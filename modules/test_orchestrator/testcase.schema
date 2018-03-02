@@ -32,7 +32,7 @@
 					"enum": [ "bw" ]
 				},
 				"on": { "type": "string" },
-				"to": { "type": "string" },
+				"to": { "type": ["string", "null"] },
 				"for": { "type": "number" }
 			},
 			"required": ["set", "on", "to"],
