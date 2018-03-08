@@ -100,11 +100,17 @@ class TestCase:
                 LOGGER.error('action ' + str(action) + ' invalid in file ' + self.name + ' ' + self.path)
                 self.valid = False
 
-    def assignPolicy(self, ip, policy):
+    def assignQosRule(self, name, action_type, direction, max_kbps):
 
-        data = {'policy': policy}
+        data = {
+            'action': 'add',
+            'type': action_type,
+            'direction': direction,
+            'max_kbps': max_kbps,
+            'max_burst_kbps': 0
+        }
 
-        r = requests.post(OS_PROXY_ENDPOINT + '/' + ip, data=data)
+        r = requests.post(OS_PROXY_ENDPOINT + '/policy/' + name, data=data)
 
         if r.status_code == 200:
             LOGGER.debug('Policy set successfully')
@@ -112,8 +118,14 @@ class TestCase:
         else:
             LOGGER.error('Failed to set policy' + r.text)
 
-    def unassignPolicy(self, ip):
-        r = requests.delete(OS_PROXY_ENDPOINT + '/' + ip)
+    def unassignQosRule(self, name, action_type, direction):
+        data = {
+            'action': 'delete',
+            'type': action_type,
+            'direction': direction
+        }
+
+        r = requests.post(OS_PROXY_ENDPOINT + '/policy/' + name, data=data)
 
         if r.status_code == 200:
             LOGGER.debug('Policy unset successfully')
@@ -121,20 +133,22 @@ class TestCase:
             LOGGER.error('Failed to unset policy' + r.text)
 
     def executeEvent(self, action, idx):
-
-        if 'for' in action:
-            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + str(action['to']) + ' on ' + action[
-                'on'] + ' for ' + str(action['for']) + ' seconds')
-        else:
-            LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + str(action['to']) + ' on ' + action['on'])
+        LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + str(action['to']) + ' on ' + action['on'])
 
         for host in self.hosts:
             if host['name'] == action['on']:
                 if action['to'] is None:
-                    self.unassignPolicy(host['ip'])
+                    if 'direction' in action:
+                        self.unassignQosRule(host['name'], action['set'], action['direction'])
+                    else:
+                        self.unassignQosRule(host['name'], action['set'], host['primary_data_direction'])
                 else:
-                    self.assignPolicy(host['ip'], action['to'])
-                break
+                    for bw in self.bandwidths:
+                        if bw['name'] == action['to']:
+                            if 'direction' in action:
+                                self.assignQosRule(host['name'], action['set'], action['direction'], bw['bw'])
+                            else:
+                                self.assignQosRule(host['name'], action['set'], host['primary_data_direction'], bw['bw'])
 
         if idx == "last":
             LOGGER.debug('Test case ' + self.name + ' Finished')
@@ -145,8 +159,8 @@ class TestCase:
         return self.name + " from " + self.path + ' state ' + self.state
 
     def loadPolicies(self):
-        for bw in self.bandwidths:
-            r = requests.post(OS_PROXY_ENDPOINT + '/policy', data=bw)
+        for host in self.hosts:
+            r = requests.post(OS_PROXY_ENDPOINT + '/policy', data=host)
 
             if r.status_code == 200:
                 LOGGER.debug(str(r.json()))
@@ -154,9 +168,8 @@ class TestCase:
                 LOGGER.error("Failed to load policy to openstack " + r.text)
 
     def deletePolicies(self):
-        for bw in self.bandwidths:
-
-            r = requests.delete(OS_PROXY_ENDPOINT + '/policy/' + bw['name'])
+        for host in self.hosts:
+            r = requests.delete(OS_PROXY_ENDPOINT + '/policy/' + host['name'])
 
             if r.status_code == 200:
                 LOGGER.debug('Policy deleted')
@@ -167,21 +180,19 @@ class TestCase:
     def startEvents(self):
         LOGGER.info('Starting test case {}'.format(self.name))
 
+        self.deletePolicies()
         self.loadPolicies()
 
-        timer = 0
         self.state = 'RUNNING'
 
         for idx, action in enumerate(self.actions):
             if idx == 0:
-                g = gevent.spawn_later(timer, self.executeEvent, action, "first")
+                g = gevent.spawn_later(action['at'], self.executeEvent, action, "first")
             elif idx == len(self.actions) - 1:
-                g = gevent.spawn_later(timer, self.executeEvent, action, "last")
+                g = gevent.spawn_later(action['at'], self.executeEvent, action, "last")
             else:
-                g = gevent.spawn_later(timer, self.executeEvent, action, "middle")
+                g = gevent.spawn_later(action['at'], self.executeEvent, action, "middle")
 
             self.eventStack.append(g)
 
-            if 'for' in action:
-                timer += action['for']
 

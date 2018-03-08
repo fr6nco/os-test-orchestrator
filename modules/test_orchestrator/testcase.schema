@@ -10,6 +10,10 @@
 						{ "format": "ipv4" },
 						{ "format": "ipv6" }
 					]
+				},
+				"primary_data_direction": {
+				    "type": "string",
+				    "enum": [ "incoming", "outgoing" ]
 				}
 			},
 			"required": ["name", "ip"],
@@ -33,10 +37,14 @@
 				},
 				"on": { "type": "string" },
 				"to": { "type": ["string", "null"] },
-				"for": { "type": "number" }
+				"direction": {
+				    "type": "string",
+				    "enum": [ "incoming", "outgoing" ]
+				},
+				"at": { "type": "number" }
 			},
 			"required": ["set", "on", "to"],
-			"additionalProperties": false
+			"additionalProperties": true
 		}
 	},
 	"type": "object",

@@ -18,7 +18,8 @@ test_resource_action_fields = {
     'set': fields.String,
     'on': fields.String,
     'to': fields.String,
-    'for': fields.Integer
+    'direction': fields.String,
+    'at': fields.Integer,
 }
 
 test_resource_fields = {
