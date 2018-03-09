@@ -14,10 +14,13 @@
 				"primary_data_direction": {
 				    "type": "string",
 				    "enum": [ "incoming", "outgoing" ]
+				},
+				"tell_dane": {
+				    "type": "boolean"
 				}
 			},
 			"required": ["name", "ip"],
-			"additionalProperties": false
+			"additionalProperties": true
 		},
 		"bandwidth": {
 			"type": "object",

@@ -4,12 +4,8 @@
     {
       "name": "dane_server",
       "ip": "172.16.3.9",
-      "primary_data_direction": "outgoing"
-    },
-    {
-      "name": "dane_client",
-      "ip": "172.16.3.5",
-      "primary_data_direction": "incoming"
+      "primary_data_direction": "outgoing",
+      "tell_dane": true
     }
   ],
   "bandwidths": [
@@ -39,42 +35,30 @@
       "set": "bw",
       "on": "dane_server",
       "to": "100mbit",
-      "direction": "outgoing",
       "at": 15
     },
     {
       "set": "bw",
       "on": "dane_server",
       "to": "1mbit",
-      "direction": "outgoing",
       "at": 30
     },
     {
       "set": "bw",
       "on": "dane_server",
       "to": "50mbit",
-      "direction": "outgoing",
       "at": 40
     },
     {
       "set": "bw",
       "on": "dane_server",
-      "to": null,
-      "direction": "outgoing",
+      "to": "30mbit",
       "at": 50
-    },
-    {
-      "set": "bw",
-      "on": "dane_client",
-      "to": "10mbit",
-      "direction": "incoming",
-      "at": 60
     },
     {
       "set": "bw",
       "on": "dane_server",
       "to": null,
-      "direction": "outgoing",
       "at": 80
     }
   ]

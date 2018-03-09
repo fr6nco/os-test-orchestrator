@@ -14,3 +14,6 @@ schema_path = ./modules/test_orchestrator/testcase.schema
 
 # os_proxy_endpoint = URL where the OS proxy is running to perform test cases
 os_proxy_endpoint = http://localhost:8090/api/qos
+
+# dane_server_endpoint = URL where the DANE server is running
+dane_server_endpoint = http://localhost:8088

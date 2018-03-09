@@ -133,6 +133,32 @@ class TestCase:
         else:
             LOGGER.error('Failed to unset policy' + r.text)
 
+    def tellDane(self, bandwidth=None):
+        if bandwidth:
+            url = Config.get('orchestrator', 'dane_server_endpoint') + '/api/bandwidth'
+
+            data = {
+                'bw': bandwidth * 1000
+            }
+            res = requests.put(url, data=data)
+
+            if res.status_code == 200:
+                LOGGER.debug('Server speed status updated on DANE. Speed set to ' + str(data['bw']))
+            else:
+                LOGGER.error('Failed to inform dane about the speed.')
+                LOGGER.error(res.text)
+        else:
+            url = Config.get('orchestrator', 'dane_server_endpoint') + '/api/reset'
+
+            res = requests.post(url)
+
+            if res.status_code == 200:
+                LOGGER.debug('Reset called on DANE')
+            else:
+                LOGGER.error('Failed to inform dane about the speed.')
+                LOGGER.error(res.text)
+
+
     def executeEvent(self, action, idx):
         LOGGER.debug('Executing action: Set ' + action['set'] + ' to ' + str(action['to']) + ' on ' + action['on'])
 
@@ -143,6 +169,8 @@ class TestCase:
                         self.unassignQosRule(host['name'], action['set'], action['direction'])
                     else:
                         self.unassignQosRule(host['name'], action['set'], host['primary_data_direction'])
+                    if 'tell_dane' in host and host['tell_dane']:
+                        self.tellDane()
                 else:
                     for bw in self.bandwidths:
                         if bw['name'] == action['to']:
@@ -150,6 +178,8 @@ class TestCase:
                                 self.assignQosRule(host['name'], action['set'], action['direction'], bw['bw'])
                             else:
                                 self.assignQosRule(host['name'], action['set'], host['primary_data_direction'], bw['bw'])
+                            if 'tell_dane' in host and host['tell_dane']:
+                                self.tellDane(bw['bw'])
 
         if idx == "last":
             LOGGER.debug('Test case ' + self.name + ' Finished')
