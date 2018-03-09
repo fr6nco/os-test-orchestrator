@@ -5,16 +5,20 @@ import requests
 from jsonschema.validators import validate
 from jsonschema.exceptions import ValidationError
 
+import ConfigParser
+Config = ConfigParser.ConfigParser()
+Config.read('./config/config.conf')
+
 import logging
 LOGGER = logging.getLogger(__name__)
 
 class TestHandler():
-    def __init__(self, path='modules/test_orchestrator/test_cases'):
+    def __init__(self):
+        self.path = Config.get('orchestrator', 'testcase_path')
         self.tests = []
 
-        #TODO validate if path exists
-        for file in os.listdir(path):
-            testcase = TestCase(path=path + '/' + file)
+        for file in os.listdir(self.path):
+            testcase = TestCase(path=self.path + '/' + file)
             if testcase.valid:
                 LOGGER.info('Testcase  '+ str(testcase) + ' valid, adding to list')
                 self.tests.append(testcase)
@@ -44,13 +48,10 @@ class TestHandler():
                 return test.eventStack
         return None
 
-#TODO Move to config file
-SCHEMA_PATH = './modules/test_orchestrator/testcase.schema'
-OS_PROXY_ENDPOINT = 'http://localhost:5001/api/qos'
-
-
 class TestCase:
     def __init__(self, path):
+        self.SCHEMA_PATH = Config.get('orchestrator', 'schema_path')
+        self.OS_PROXY_ENDPOINT = Config.get('orchestrator', 'os_proxy_endpoint')
         self.path = path
         self.valid = True
         self.schema = ""
@@ -69,7 +70,7 @@ class TestCase:
         try:
             with open(self.path) as f_content:
                 self.data = json.loads(f_content.read())
-            with open(SCHEMA_PATH) as s_content:
+            with open(self.SCHEMA_PATH) as s_content:
                 self.schema = json.loads(s_content.read())
         except IOError as e:
             LOGGER.error(str(e))
@@ -110,7 +111,7 @@ class TestCase:
             'max_burst_kbps': 0
         }
 
-        r = requests.post(OS_PROXY_ENDPOINT + '/policy/' + name, data=data)
+        r = requests.post(self.OS_PROXY_ENDPOINT + '/policy/' + name, data=data)
 
         if r.status_code == 200:
             LOGGER.debug('Policy set successfully')
@@ -125,7 +126,7 @@ class TestCase:
             'direction': direction
         }
 
-        r = requests.post(OS_PROXY_ENDPOINT + '/policy/' + name, data=data)
+        r = requests.post(self.OS_PROXY_ENDPOINT + '/policy/' + name, data=data)
 
         if r.status_code == 200:
             LOGGER.debug('Policy unset successfully')
@@ -160,7 +161,7 @@ class TestCase:
 
     def loadPolicies(self):
         for host in self.hosts:
-            r = requests.post(OS_PROXY_ENDPOINT + '/policy', data=host)
+            r = requests.post(self.OS_PROXY_ENDPOINT + '/policy', data=host)
 
             if r.status_code == 200:
                 LOGGER.debug(str(r.json()))
@@ -169,7 +170,7 @@ class TestCase:
 
     def deletePolicies(self):
         for host in self.hosts:
-            r = requests.delete(OS_PROXY_ENDPOINT + '/policy/' + host['name'])
+            r = requests.delete(self.OS_PROXY_ENDPOINT + '/policy/' + host['name'])
 
             if r.status_code == 200:
                 LOGGER.debug('Policy deleted')
