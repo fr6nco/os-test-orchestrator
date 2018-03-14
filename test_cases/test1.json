@@ -3,7 +3,7 @@
   "hosts": [
     {
       "name": "dane_server",
-      "ip": "172.16.3.9",
+      "ip": "172.16.4.9",
       "primary_data_direction": "outgoing",
       "tell_dane": true
     }
