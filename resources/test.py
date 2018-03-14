@@ -6,7 +6,9 @@ LOGGER = logging.getLogger(__name__)
 
 test_resource_host_fields = {
     'name': fields.String,
-    'ip': fields.String
+    'ip': fields.String,
+    'primary_data_direction': fields.String,
+    'tell_dane': fields.Boolean
 }
 
 test_resource_bandwidth_fields = {
