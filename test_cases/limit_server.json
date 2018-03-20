@@ -1,0 +1,47 @@
+{
+  "name": "limit_server",
+  "hosts": [
+    {
+      "name": "dane_server",
+      "ip": "172.16.4.9",
+      "primary_data_direction": "outgoing",
+      "tell_dane": true
+    }
+  ],
+  "bandwidths": [
+    {
+      "name": "50mbit",
+      "bw": 50000
+    },
+    {
+      "name": "5mbit",
+      "bw": 5000
+    },
+    {
+      "name": "7.5mbit",
+      "bw": 7500
+    },
+    {
+      "name": "1mbit",
+      "bw": 1000
+    },
+    {
+      "name": "10mbit",
+      "bw": 10000
+    }
+  ],
+  "actions": [
+    {
+      "set": "bw",
+      "on": "dane_server",
+      "to": "5mbit",
+      "at": 10
+    },
+    {
+      "set": "bw",
+      "on": "dane_server",
+      "to": null,
+      "at": 180
+    }
+  ]
+}
