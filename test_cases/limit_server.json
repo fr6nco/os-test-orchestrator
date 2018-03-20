@@ -28,9 +28,19 @@
     {
       "name": "10mbit",
       "bw": 10000
+    },
+    {
+      "name": "800mbit",
+      "bw": 800000
     }
   ],
   "actions": [
+    {
+      "set": "bw",
+      "on": "dane_server",
+      "to": "800mbit",
+      "at": 1
+    },
     {
       "set": "bw",
       "on": "dane_server",
