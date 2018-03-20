@@ -40,6 +40,12 @@
     {
       "set": "bw",
       "on": "dane_server",
+      "to": "5mbit",
+      "at": 150
+    }
+    {
+      "set": "bw",
+      "on": "dane_server",
       "to": null,
       "at": 300
     }
