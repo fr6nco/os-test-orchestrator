@@ -34,14 +34,14 @@
     {
       "set": "bw",
       "on": "dane_server",
-      "to": "5mbit",
-      "at": 10
+      "to": "10mbit",
+      "at": 30
     },
     {
       "set": "bw",
       "on": "dane_server",
       "to": null,
-      "at": 180
+      "at": 300
     }
   ]
 }
