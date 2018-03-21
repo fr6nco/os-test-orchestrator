@@ -30,6 +30,10 @@
       "bw": 10000
     },
     {
+      "name": "100mbit",
+      "bw": 100000
+    },
+    {
       "name": "800mbit",
       "bw": 800000
     }
@@ -38,14 +42,14 @@
     {
       "set": "bw",
       "on": "dane_server",
-      "to": "10mbit",
+      "to": "100mbit",
       "at": 1
     },
     {
       "set": "bw",
       "on": "dane_server",
-      "to": "5mbit",
-      "at": 150
+      "to": "10mbit",
+      "at": 40
     },
     {
       "set": "bw",
