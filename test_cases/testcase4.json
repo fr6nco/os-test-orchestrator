@@ -1,5 +1,5 @@
 t{
-  "name": "testcase2",
+  "name": "testcase4",
   "hosts": [
     {
       "name": "dane_server",
