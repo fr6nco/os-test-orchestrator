@@ -1,25 +1,25 @@
 {
-  "name": "unlimited",
+  "name": "testcase2",
   "hosts": [
     {
       "name": "dane_server",
       "ip": "172.16.4.9",
       "primary_data_direction": "outgoing",
-      "tell_dane": true
+      "tell_dane": false
     }
   ],
   "bandwidths": [
     {
+      "name": "100mbit",
+      "bw": 100000
+    },
+    {
+      "name": "30mbit",
+      "bw": 30000
+    },
+    {
       "name": "50mbit",
       "bw": 50000
-    },
-    {
-      "name": "5mbit",
-      "bw": 5000
-    },
-    {
-      "name": "7.5mbit",
-      "bw": 7500
     },
     {
       "name": "1mbit",
@@ -30,26 +30,22 @@
       "bw": 10000
     },
     {
-      "name": "100mbit",
-      "bw": 100000
-    },
-    {
-      "name": "800mbit",
-      "bw": 800000
+      "name": "5mbit",
+      "bw": 5000
     }
   ],
   "actions": [
     {
       "set": "bw",
       "on": "dane_server",
-      "to": "800mbit",
-      "at": 1
+      "to": "10mbit",
+      "at": 60
     },
     {
       "set": "bw",
       "on": "dane_server",
       "to": null,
-      "at": 300
+      "at": 220
     }
   ]
 }
