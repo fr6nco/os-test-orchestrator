@@ -9,6 +9,10 @@
     }
   ],
   "bandwidths": [
+      {
+      "name": "800mbit",
+      "bw": 800000
+    },
     {
       "name": "100mbit",
       "bw": 100000
