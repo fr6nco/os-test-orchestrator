@@ -44,7 +44,7 @@
     {
       "set": "bw",
       "on": "dane_server",
-      "to": null,
+      "to": "800mbit",
       "at": 120
     }
   ]
