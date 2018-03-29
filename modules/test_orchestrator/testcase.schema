@@ -46,7 +46,7 @@
 				},
 				"at": { "type": "number" }
 			},
-			"required": ["set", "on", "to"],
+			"required": ["set", "on", "to", "at"],
 			"additionalProperties": true
 		}
 	},
