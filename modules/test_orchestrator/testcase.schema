@@ -11,6 +11,10 @@
 						{ "format": "ipv6" }
 					]
 				},
+				"lookup": {
+				    "type": "string",
+				    "enum": ["ip", "fqdn"]
+				},
 				"primary_data_direction": {
 				    "type": "string",
 				    "enum": [ "incoming", "outgoing" ]
@@ -19,7 +23,7 @@
 				    "type": "boolean"
 				}
 			},
-			"required": ["name", "ip"],
+			"required": ["name", "lookup"],
 			"additionalProperties": true
 		},
 		"bandwidth": {

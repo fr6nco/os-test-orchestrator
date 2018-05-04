@@ -7,6 +7,8 @@ LOGGER = logging.getLogger(__name__)
 test_resource_host_fields = {
     'name': fields.String,
     'ip': fields.String,
+    'fqdn': fields.String,
+    'lookup': fields.String,
     'primary_data_direction': fields.String,
     'tell_dane': fields.Boolean
 }

@@ -2,6 +2,7 @@ import json
 import os
 import gevent
 import requests
+import socket
 from jsonschema.validators import validate
 from jsonschema.exceptions import ValidationError
 
@@ -100,6 +101,21 @@ class TestCase:
                      len(filter(lambda e: e['name'] == action['to'] or action['to'] is None, self.bandwidths)) == 0:
                 LOGGER.error('action ' + str(action) + ' invalid in file ' + self.name + ' ' + self.path)
                 self.valid = False
+
+        for host in self.hosts:
+            if host['lookup'] == 'ip' and 'ip' not in host or host['lookup'] == 'fqdn' and 'fqdn' not in host:
+                LOGGER.error('host ' + str(host) + ' invalid in file ' + self.name + ' ' + self.path)
+                LOGGER.error('set IP or FQDN according to Lookup variable')
+                self.valid = False
+
+            if self.valid and host['lookup'] == 'fqdn':
+                try:
+                    host['ip'] = socket.gethostbyname(host['fqdn'])
+                except socket.gaierror as e:
+                    LOGGER.error(str(e))
+                    LOGGER.error('FQDN unresolved')
+                    self.valid = False
+
 
     def assignQosRule(self, name, action_type, direction, max_kbps):
 
