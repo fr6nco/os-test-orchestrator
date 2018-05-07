@@ -38,6 +38,7 @@ The test cases must follow the desired schema. The current JSON schema may be fo
 	    {
 	      "name": "dane_server",
 	      "ip": "172.16.4.9",
+	      "lookup": "ip",
 	      "primary_data_direction": "outgoing",
 	      "tell_dane": true
 	    }
@@ -81,7 +82,9 @@ The main json file contains 4 sections:
 Array
 Properties:
  * name: Name of host - required
- * ip: IP address of host - required
+ * lookup: enum [ip, fqdn] - required
+ * ip: IP address of host - required if ip is defined in lookup
+ * fqdn: domain name (fqdn) - required if fqdn is defined in lookup. fqdn is translated to ip in validation section
  * primary_data_direction: incoming or outgoing, defines which is the main data flow. eg outgoing for a web server - optional
  * tell_dane: true or false, defines whether the bandwidth limitation should be sent to dane endpoint. Applies only for server - optional
 
