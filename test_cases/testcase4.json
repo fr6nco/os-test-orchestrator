@@ -4,7 +4,7 @@
     {
       "name": "dane_server",
       "lookup": "fqdn",
-      "fqdn": "TNO-DANE-PROV.dash-server-vnfd--1.a.cloud5.morse.uma.es",
+      "fqdn": "TNO-DEMO-PROV.tno-dash-server-vnfd--1.a.cloud5.morse.uma.es",
       "primary_data_direction": "outgoing",
       "tell_dane": true
     }
